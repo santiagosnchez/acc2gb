@@ -8,6 +8,9 @@ if [[ ${1} == -h* ]]; then
 	die "Try:\nchmod +x parallel_acc2gb.sh\n ./parallel_acc2gb.sh accession_list.txt new_genbank_file.gb\n"
 fi
 
+API_KEY=''
+if 
+
 # check if gb file has not been created already
 
 if [ -f $2 ]; then
