@@ -1,4 +1,4 @@
-# acc2gb_parallel
+# acc2gb
 Shell code to retrieve GenBank records from a list of accession numbers (using [gnu-parallel](https://www.gnu.org/software/parallel/))
 
 ## NCBI API key
@@ -10,10 +10,13 @@ This program used to work well before NCBI's decision to implement an API key wi
 ## Requirements
 
 1. Bash
-~~2. [GNU-parallel](https://www.gnu.org/software/parallel/)~~
+2. ~~[GNU-parallel](https://www.gnu.org/software/parallel/)~~
 
 ~~**GNU-parallel** needs to be installed and available on the system `PATH`.~~ This is no longer a requirement as the program can be run single-threaded. GNU-parallel is still a super useful to have installed in you computer anyway.
 
+## Installing
+
+wget https://raw.githubusercontent.com/santiagosnchez/acc2gb_parallel/master/acc2gb
 
 
 
