@@ -50,7 +50,7 @@ download_files()
     if [[ $threads == 0 ]]; then
         cat ${acclist} | parallel --progress \ 
         "curl -s 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id='{}'&api_key=${NCBI_API_KEY}&rettype=gb&retmode=text'" > $gbfile
-    elif [[ $threads == 1 ]]l then
+    elif [[ $threads == 1 ]]; then
         for acc in `cat ${acclist}`; do
             curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${acc}&api_key=${NCBI_API_KEY}&rettype=gb&retmode=text"
         done > $gbfile
