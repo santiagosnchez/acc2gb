@@ -1,5 +1,5 @@
 # acc2gb
-Shell code to retrieve GenBank records from a list of accession numbers (using [gnu-parallel](https://www.gnu.org/software/parallel/))
+Shell code to retrieve GenBank records from a list of accession numbers (using [gnu-parallel](https://www.gnu.org/software/parallel/) for multi-threading)
 
 ## NCBI API key
 
