@@ -7,7 +7,7 @@ help_message="
 #####      acc2gb     #######
 #############################
 ©Santiago Sánchez-Ramírez, University of Toronto
-https://github.com/santiagosnchez/acc2gb_parallel
+https://github.com/santiagosnchez/acc2gb
 
 Make the program excecutable with:
 chmod +x acc2gb
