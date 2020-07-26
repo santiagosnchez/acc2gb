@@ -27,7 +27,9 @@ Copy the whole repo:
 
     ./acc2gb -h
     ./acc2gb -help
-    
+
+This will spit out a list of arguments and an example.
+
     Make the program excecutable with:
     chmod +x acc2gb
 
