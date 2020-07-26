@@ -6,15 +6,16 @@ help_message="
 #############################
 ##### acc2gb_parallel #######
 #############################
+©Santiago Sánchez-Ramírez, University of Toronto
+https://github.com/santiagosnchez/acc2gb_parallel
 
-#######
-First run without arguments (API key)
-#######
-
-Then try:
+Make the program excecutable with:
 chmod +x acc2gb_parallel.sh
+
+Run example:
 ./acc2gb_parallel.sh [ -h | -threads INT -gb OUTPUTFILE ] -list INPUTFILE
 
+Arguments:
 [-h|-help]      Prints this help message
 -list    STR    Path to the file with a list of GenBank accessions
 (optional)
@@ -81,20 +82,6 @@ check_if_file_exists()
     fi
 }
 
-# first ask for the API key
-# and store it in ~/.bashrc
-
-source ~/.bashrc
-if [[ -z $NCBI_API_KEY ]]; then
-    echo -n "An api key is required. If you don't have one, go to https://www.ncbi.nlm.nih.gov/myncbi/ and request one.
-If you do have one, paste the key here: "
-    read api_key
-    echo "export NCBI_API_KEY=$api_key" >> ~/.bashrc
-    die "Key stored in ~/.bashrc"
-else
-    echo "Key found: $NCBI_API_KEY"
-fi
-
 # chech if gnu-parallel is installed
 threads=`check_parallel`
 
@@ -132,7 +119,26 @@ fi
 if [[ ${#threads} == 0 ]]; then
     threads=0
 fi
- 
+
+# first ask for the API key
+# and store it in ~/.bashrc
+
+source ~/.bashrc
+if [[ -z $NCBI_API_KEY ]]; then
+    echo -n "An api key is needed to run mutithreaded. If you don't have one, go to https://www.ncbi.nlm.nih.gov/myncbi/ and request one.
+If you do have one, paste the key here. If not, press <enter> to run in single-thread mode: "
+    read api_key
+    if [[ ${#api_key} == 36 ]]; then
+        echo "export NCBI_API_KEY=$api_key" >> ~/.bashrc
+        echo "api key stored in ~/.bashrc"
+        source ~/.bashrc
+    else
+        echo "No api key. Running single-threaded"
+        threads=1
+    fi
+else
+    echo "Key found: $NCBI_API_KEY"
+fi
 
 # check if list is empty
 check_empty=`[ -s $acclist ]; echo $?`
