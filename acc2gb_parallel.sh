@@ -46,20 +46,39 @@ download_files()
     acclist=${args[0]}
     gbfile=${args[1]}
     threads=${args[2]}
-    echo "Downloading to ${gblist}"
+    echo "Downloading to ${gbfile}"
     if [[ $threads == 0 ]]; then
-        cat ${acclist} | parallel --progress \ 
-        "curl -s 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id='{}'&api_key=${NCBI_API_KEY}&rettype=gb&retmode=text'" > $gbfile
+        cat ${acclist} | parallel --progress --keep 'curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={}&api_key=${NCBI_API_KEY}&rettype=gb&retmode=text"' > $gbfile
     elif [[ $threads == 1 ]]; then
+        echo "Single-threaded. Might be slow..."
+        records=`cat ${acclist} | wc -l`
+        i=0
         for acc in `cat ${acclist}`; do
-            curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${acc}&api_key=${NCBI_API_KEY}&rettype=gb&retmode=text"
-        done > $gbfile
+            curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${acc}&api_key=${NCBI_API_KEY}&rettype=gb&retmode=text" >> $gbfile
+            i=$(( i+1 ))
+            progress=$(echo "scale=2;(${i}/${records})*100" | bc -l)
+            echo -ne "${progress}%\r"
+        done
+        echo
     else
-       cat ${acclist} | parallel --progress -j $threads \ 
-       "curl -s 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id='{}'&api_key=${NCBI_API_KEY}&rettype=gb&retmode=text'" > $gbfile
+       cat ${acclist} | parallel --progress -j $threads --keep 'curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={}&api_key=${NCBI_API_KEY}&rettype=gb&retmode=text"' > $gbfile
     fi
-    echo -e "\nNumber of records downloaded:  $(grep -c '//' ${gblist})"
+    echo -e "\nNumber of records downloaded:  "$(grep -c '^//$' ${gbfile})
     echo "Number of records not found: $(grep -c 'Failed to retrieve sequence' ${gbfile})"
+}
+
+check_if_file_exists()
+{
+    # check if gb file has not been created already
+    if [ -f $1 ]; then
+        echo -n "File $1 already exists, replace?[y|n]:"
+        read replace
+        if [[ $replace == "y" ]]; then
+            rm $1
+        else 
+            die "Exiting...\n"
+        fi
+    fi
 }
 
 # first ask for the API key
@@ -96,8 +115,6 @@ else
             gbfile=${args[$(( i+1 ))]}
         elif [[ "${args[$i]}" == '-threads' ]]; then
             threads=${args[$(( i+1 ))]}
-        else
-            die "$help_message"
         fi
     done
 fi
@@ -105,36 +122,27 @@ fi
 if [[ ${#acclist} == 0 ]]; then
     die "No file name given to accession list"
 fi
-if [[ ${#acclist} == 0 ]]; then
+if [[ ${#gbfile} == 0 ]]; then
+    echo "Using \"out_genbank.gb\" as output"
     gbfile="out_genbank.gb"
+    check_if_file_exists $gbfile
+else
+    check_if_file_exists $gbfile
 fi
 if [[ ${#threads} == 0 ]]; then
     threads=0
 fi
-
-# check if gb file has not been created already
-
-if [ -f $gbfile ]; then
-    echo -n "File $gbfile already exists, replace?[y|n]:"
-    read replace
-    if [[ $replace == "y" ]]; then
-        rm $gbfile
-    else 
-        die "Exiting...\n"
-    fi
-fi
+ 
 
 # check if list is empty
+check_empty=`[ -s $acclist ]; echo $?`
 
-check=`[ -s $acclist ]; echo $?`
-
-if [[ $check == 0 ]]; then
+if [[ $check_empty == 0 ]]; then
     # check for duplicates
     echo "Checking for duplicates..."
     dupl=`sort $acclist | uniq -c | awk '$1 !~ 1'`
     if [[ ${#dupl} == 0 ]]; then
         # retreive data
-        echo "Downloading to $gbfile..."
         download_files $acclist $gbfile $threads
     else
         # show duplicates
@@ -143,8 +151,8 @@ if [[ $check == 0 ]]; then
         sort $acclist | uniq > "unique_${acclist}"
         echo -e "\nA new list file uniq_${acclist} was created\n\n"	
         # retreive data
-        echo "Downloading to $gbfile..."
         download_files $acclist $gbfile $threads
+    fi
 else
 	die "File: $acclist is empty. Exiting...\n"
 fi
